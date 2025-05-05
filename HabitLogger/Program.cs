@@ -60,11 +60,11 @@ internal class Program
                     case "3":
                         Delete();
                         break;
-                    //case 4:
-                    //    Update();
-                    //    break;
+                    case "4":
+                        Update();
+                        break;
                     default:
-                        Console.WriteLine("Invalid Command. Please type a number from 0 to 4.\n";
+                        Console.WriteLine("Invalid Command. Please type a number from 0 to 4.\n");
                         break;
                 }
 
@@ -140,6 +140,44 @@ internal class Program
             GetUserInput();
         }
 
+        static void Update()
+        {
+            string connectionString = "Data Source=habit-Tracker.db";
+
+            Console.Clear();
+            GetAllRecords();
+
+            var recordId = GetNumberInput("\n\nPlease type Id of the record would like to update. Type 0 to return to main menu.");
+
+            using (var connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+
+                var checkCmd = connection.CreateCommand();
+                checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM drinking_water WHERE Id = {recordId})";
+                int checkQuery = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                if (checkQuery == 0)
+                {
+                    Console.WriteLine($"\nRecord with Id {recordId} doesn't exist.\n");
+                    Console.ReadKey();
+                    connection.Close();
+                    Update();
+                }
+
+                string date = GetDateInput();
+
+                int quantity = GetNumberInput("\nInsert the number of glasses or other measure of your choice");
+
+                var tableCmd = connection.CreateCommand();
+                tableCmd.CommandText = $"UPDATE drinking_water SET date = '{date}', quantity = {quantity} WHERE Id = {recordId}";
+
+                tableCmd.ExecuteNonQuery();
+
+                connection.Close();
+            }
+        }
+
         static void Delete()
         {
             Console.Clear();
@@ -167,7 +205,7 @@ internal class Program
             }
 
             Console.WriteLine($"\n\nRecord with Id {recordId} was deleted. \n\n");
-            Console.ReadLine();
+            Console.ReadKey();
 
             GetUserInput();
         }
@@ -196,8 +234,6 @@ internal class Program
             return finalInput;
         }
     }
-
-
 
     public class DrinkingWater
     {
