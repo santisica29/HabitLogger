@@ -57,15 +57,15 @@ internal class Program
                     case "2":
                         Insert();
                         break;
-                        //case 3:
-                        //    Delete();
-                        //    break;
-                        //case 4:
-                        //    Update();
-                        //    break;
-                        //default:
-                        //    Console.WriteLine("Invalid Command. Please type a number from 0 to 4.\n";
-                        //    break;
+                    case "3":
+                        Delete();
+                        break;
+                    //case 4:
+                    //    Update();
+                    //    break;
+                    default:
+                        Console.WriteLine("Invalid Command. Please type a number from 0 to 4.\n";
+                        break;
                 }
 
 
@@ -140,6 +140,38 @@ internal class Program
             GetUserInput();
         }
 
+        static void Delete()
+        {
+            Console.Clear();
+            GetAllRecords();
+
+            var recordId = GetNumberInput("\n\nType the Id of the record you want to delete or press 0 to go back to the Main Menu");
+
+            string connectionString = "Data Source=habit-Tracker.db";
+
+            using (var connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+                var tableCmd = connection.CreateCommand();
+
+                tableCmd.CommandText = $"DELETE from drinking_water WHERE Id = '{recordId}'";
+
+                int rowCount = tableCmd.ExecuteNonQuery();
+
+                if (rowCount == 0)
+                {
+                    Console.WriteLine($"\n\nRecord with Id {recordId} doesn't exist. \n\n");
+                    Console.ReadKey();
+                    Delete();
+                }
+            }
+
+            Console.WriteLine($"\n\nRecord with Id {recordId} was deleted. \n\n");
+            Console.ReadLine();
+
+            GetUserInput();
+        }
+
         static string GetDateInput()
         {
             Console.WriteLine("Please insert the date: (Format: dd-mm-yyyy). Type 0 to return to main menu");
@@ -164,6 +196,8 @@ internal class Program
             return finalInput;
         }
     }
+
+
 
     public class DrinkingWater
     {
