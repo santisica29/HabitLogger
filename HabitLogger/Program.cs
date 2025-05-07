@@ -67,8 +67,6 @@ internal class Program
                         Console.WriteLine("Invalid Command. Please type a number from 0 to 4.\n");
                         break;
                 }
-
-
             }
         }
 
@@ -96,7 +94,7 @@ internal class Program
                         new DrinkingWater
                         {
                             Id = reader.GetInt32(0),
-                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yy", new CultureInfo("en-US")),
                             Quantity = reader.GetInt32(2)
                         });
                     }
@@ -174,6 +172,8 @@ internal class Program
 
                 tableCmd.ExecuteNonQuery();
 
+                Console.WriteLine("\nRecord updated successfully.\n");
+
                 connection.Close();
             }
         }
@@ -217,6 +217,12 @@ internal class Program
             string? dateInput = Console.ReadLine();
 
             if (dateInput == "0") GetUserInput();
+
+            while (!DateTime.TryParseExact(dateInput, "dd-MM-yy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
+            {
+                Console.WriteLine("\nInvalid date. (Format: dd-mm-yy). Type 0 to return to main menu or try again:\n");
+                dateInput = Console.ReadLine();
+            }
 
             return dateInput;
         }
