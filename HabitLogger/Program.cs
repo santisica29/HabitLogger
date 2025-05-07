@@ -129,9 +129,13 @@ internal class Program
             using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
+                
                 var tableCmd = connection.CreateCommand();
                 tableCmd.CommandText =
-                    $"INSERT INTO drinking_water(date, quantity) VALUES ('{date}', {quantity})";
+                    $"INSERT INTO drinking_water(date, quantity) VALUES (@Date, @Quantity)";
+
+                tableCmd.Parameters.Add("@Date", SqliteType.Text).Value = date;
+                tableCmd.Parameters.Add("@Quantity", SqliteType.Integer).Value = quantity;
 
                 tableCmd.ExecuteNonQuery();
 
@@ -156,7 +160,10 @@ internal class Program
                 connection.Open();
 
                 var checkCmd = connection.CreateCommand();
-                checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM drinking_water WHERE Id = {recordId})";
+                
+                checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM drinking_water WHERE Id = @Id)";
+                checkCmd.Parameters.Add("@Id",SqliteType.Real).Value = recordId;
+
                 int checkQuery = Convert.ToInt32(checkCmd.ExecuteScalar());
 
                 if (checkQuery == 0)
@@ -173,11 +180,16 @@ internal class Program
                 int quantity = GetNumberInput("\nInsert the number of glasses or other measure of your choice");
 
                 var tableCmd = connection.CreateCommand();
-                tableCmd.CommandText = $"UPDATE drinking_water SET date = '{date}', quantity = {quantity} WHERE Id = {recordId}";
+                tableCmd.CommandText = $"UPDATE drinking_water SET date = @Date, quantity = @Quantity WHERE Id = @Id";
+
+                tableCmd.Parameters.Add("@Date", SqliteType.Text).Value = date;
+                tableCmd.Parameters.Add("@Id", SqliteType.Real).Value = recordId;
+                tableCmd.Parameters.Add("@Quantity", SqliteType.Real).Value = quantity;
 
                 tableCmd.ExecuteNonQuery();
 
                 Console.WriteLine("\nRecord updated successfully.\n");
+                Console.ReadKey();
             }
         }
 
@@ -200,7 +212,8 @@ internal class Program
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
 
-                tableCmd.CommandText = $"DELETE from drinking_water WHERE Id = '{recordId}'";
+                tableCmd.CommandText = $"DELETE from drinking_water WHERE Id = @Id";
+                tableCmd.Parameters.Add("@Id", SqliteType.Integer).Value = recordId;
 
                 int rowCount = tableCmd.ExecuteNonQuery();
 
