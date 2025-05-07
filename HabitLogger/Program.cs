@@ -29,12 +29,13 @@ internal class Program
 
         static void GetUserInput()
         {
-            Console.Clear();
             bool closeApp = false;
 
             while (closeApp == false)
             {
-                Console.WriteLine("\n\nMAIN MENU");
+                Console.Clear();
+
+                Console.WriteLine("MAIN MENU");
                 Console.WriteLine("\nWhat would you like to do?");
                 Console.WriteLine("\nType 0 to Close Application.");
                 Console.WriteLine("Type 1 to View All Records.");
@@ -49,8 +50,9 @@ internal class Program
                 {
                     case "0":
                         Console.WriteLine("Goodbye\n");
+                        Console.ReadKey();
                         closeApp = true;
-                        break;
+                        return;
                     case "1":
                         GetAllRecords();
                         break;
@@ -112,6 +114,7 @@ internal class Program
                     Console.WriteLine($"{dw.Id} - {dw.Date.ToString("dd-MM-yyyy")} - Quantity: {dw.Quantity}");
                 }
                 Console.WriteLine("---------------------------------------------\n");
+                Console.ReadKey();
             }
         }
 
@@ -135,7 +138,8 @@ internal class Program
                 connection.Close();
             }
 
-            GetUserInput();
+            Console.WriteLine("Record inserted sucessfully.");
+            Console.ReadKey();
         }
 
         static void Update()
@@ -161,6 +165,7 @@ internal class Program
                     Console.ReadKey();
                     connection.Close();
                     Update();
+                    return;
                 }
 
                 string date = GetDateInput();
@@ -173,8 +178,6 @@ internal class Program
                 tableCmd.ExecuteNonQuery();
 
                 Console.WriteLine("\nRecord updated successfully.\n");
-
-                connection.Close();
             }
         }
 
@@ -184,6 +187,11 @@ internal class Program
             GetAllRecords();
 
             var recordId = GetNumberInput("\n\nType the Id of the record you want to delete or press 0 to go back to the Main Menu");
+
+            if (recordId == 0)
+            {
+                return;
+            }
 
             string connectionString = "Data Source=habit-Tracker.db";
 
@@ -201,18 +209,17 @@ internal class Program
                     Console.WriteLine($"\n\nRecord with Id {recordId} doesn't exist. \n\n");
                     Console.ReadKey();
                     Delete();
+                    return;
                 }
             }
 
             Console.WriteLine($"\n\nRecord with Id {recordId} was deleted. \n\n");
             Console.ReadKey();
-
-            GetUserInput();
         }
 
         static string GetDateInput()
         {
-            Console.WriteLine("Please insert the date: (Format: dd-mm-yyyy). Type 0 to return to main menu");
+            Console.WriteLine("Please insert the date: (Format: dd-mm-yy). Type 0 to return to main menu");
 
             string? dateInput = Console.ReadLine();
 
