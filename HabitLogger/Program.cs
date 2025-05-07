@@ -6,9 +6,8 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        string connectionString = "Data Source=habit-Tracker.db";
 
-        using (var connection = new SqliteConnection(connectionString))
+        using (var connection = new SqliteConnection(Globals.ConnectionString))
         {
             connection.Open();
             var tableCmd = connection.CreateCommand();
@@ -74,10 +73,9 @@ internal class Program
 
         static void GetAllRecords()
         {
-            string connectionString = "Data Source=habit-Tracker.db";
 
             Console.Clear();
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Globals.ConnectionString))
             {
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
@@ -120,13 +118,12 @@ internal class Program
 
         static void Insert()
         {
-            string connectionString = "Data Source=habit-Tracker.db";
 
             string date = GetDateInput();
 
             int quantity = GetNumberInput("Please insert a number of glasses or other measure of your choice (no decimals allowed)\n");
 
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Globals.ConnectionString))
             {
                 connection.Open();
                 
@@ -148,14 +145,12 @@ internal class Program
 
         static void Update()
         {
-            string connectionString = "Data Source=habit-Tracker.db";
-
             Console.Clear();
             GetAllRecords();
 
             var recordId = GetNumberInput("\n\nPlease type Id of the record would like to update. Type 0 to return to main menu.");
 
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Globals.ConnectionString))
             {
                 connection.Open();
 
@@ -205,9 +200,7 @@ internal class Program
                 return;
             }
 
-            string connectionString = "Data Source=habit-Tracker.db";
-
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Globals.ConnectionString))
             {
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
@@ -268,5 +261,11 @@ internal class Program
         public DateTime Date { get; set; }
         public int Quantity { get; set; }
     }
+
+    public static class Globals
+    {
+        public static readonly string ConnectionString = "Data Source=habit-Tracker.db";
+    }
+
 }
 
