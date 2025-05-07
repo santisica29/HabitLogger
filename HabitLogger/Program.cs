@@ -4,10 +4,10 @@ using System.Globalization;
 
 internal class Program
 {
+    static readonly string connectionString = "Data Source=habit-Tracker.db";
     private static void Main(string[] args)
     {
-
-        using (var connection = new SqliteConnection(Globals.ConnectionString))
+        using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
             var tableCmd = connection.CreateCommand();
@@ -75,7 +75,7 @@ internal class Program
         {
 
             Console.Clear();
-            using (var connection = new SqliteConnection(Globals.ConnectionString))
+            using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
@@ -123,7 +123,7 @@ internal class Program
 
             int quantity = GetNumberInput("Please insert a number of glasses or other measure of your choice (no decimals allowed)\n");
 
-            using (var connection = new SqliteConnection(Globals.ConnectionString))
+            using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
                 
@@ -150,7 +150,7 @@ internal class Program
 
             var recordId = GetNumberInput("\n\nPlease type Id of the record would like to update. Type 0 to return to main menu.");
 
-            using (var connection = new SqliteConnection(Globals.ConnectionString))
+            using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
 
@@ -200,7 +200,7 @@ internal class Program
                 return;
             }
 
-            using (var connection = new SqliteConnection(Globals.ConnectionString))
+            using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
@@ -261,11 +261,5 @@ internal class Program
         public DateTime Date { get; set; }
         public int Quantity { get; set; }
     }
-
-    public static class Globals
-    {
-        public static readonly string ConnectionString = "Data Source=habit-Tracker.db";
-    }
-
 }
 
