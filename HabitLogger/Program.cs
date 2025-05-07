@@ -50,9 +50,9 @@ internal class Program
                 {
                     case "0":
                         Console.WriteLine("Goodbye\n");
-                        Console.ReadKey();
                         closeApp = true;
-                        return;
+                        Environment.Exit(0);
+                        break;
                     case "1":
                         GetAllRecords();
                         break;
@@ -219,11 +219,12 @@ internal class Program
 
         static string GetDateInput()
         {
-            Console.WriteLine("Please insert the date: (Format: dd-mm-yy). Type 0 to return to main menu");
+            Console.WriteLine("Please insert the date: (Format: dd-mm-yy). Type t to enter today's date or 0 to return to main menu");
 
-            string? dateInput = Console.ReadLine();
+            string? dateInput = Console.ReadLine().Trim().ToLower();
 
             if (dateInput == "0") GetUserInput();
+            if (dateInput == "t") return DateTime.Now.ToString("dd-MM-yy");
 
             while (!DateTime.TryParseExact(dateInput, "dd-MM-yy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
             {
