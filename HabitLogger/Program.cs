@@ -96,7 +96,7 @@ internal class Program
                             Id = reader.GetInt32(0),
                             Name = reader.GetString(1),
                             Date = DateTime.ParseExact(reader.GetString(2), "dd-MM-yy", new CultureInfo("en-US")),
-                            Quantity = reader.GetDouble(3)
+                            Measurement = reader.GetDouble(3)
                         });
                     }
                 }
@@ -261,7 +261,7 @@ internal class Program
         public int Id { get; set; }
         public string Name { get; set; }
         public DateTime Date { get; set; }
-        public double Quantity { get; set; }
+        public double Measurement { get; set; }
     }
     public class DrinkingWater
     {
