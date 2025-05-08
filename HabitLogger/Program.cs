@@ -13,10 +13,10 @@ internal class Program
             var tableCmd = connection.CreateCommand();
 
             tableCmd.CommandText =
-                @"CREATE TABLE IF NOT EXISTS drinking_water (
+                $@"CREATE TABLE IF NOT EXISTS habits (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Date TEXT,
-            Quantity INTEGER
+            Quantity REAL
             )";
 
             tableCmd.ExecuteNonQuery();
@@ -80,9 +80,9 @@ internal class Program
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
                 tableCmd.CommandText =
-                    $"SELECT * FROM drinking_water";
+                    $"SELECT * FROM habits";
 
-                List<DrinkingWater> tableData = new();
+                List<Habits> tableData = new();
 
                 SqliteDataReader reader = tableCmd.ExecuteReader();
 
@@ -91,11 +91,12 @@ internal class Program
                     while (reader.Read())
                     {
                         tableData.Add(
-                        new DrinkingWater
+                        new Habits
                         {
                             Id = reader.GetInt32(0),
-                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yy", new CultureInfo("en-US")),
-                            Quantity = reader.GetInt32(2)
+                            Name = reader.GetString(1),
+                            Date = DateTime.ParseExact(reader.GetString(2), "dd-MM-yy", new CultureInfo("en-US")),
+                            Quantity = reader.GetDouble(3)
                         });
                     }
                 }
@@ -255,6 +256,13 @@ internal class Program
         }
     }
 
+    public class Habits
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+        public double Quantity { get; set; }
+    }
     public class DrinkingWater
     {
         public int Id { get; set; }
