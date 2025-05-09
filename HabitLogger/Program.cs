@@ -28,7 +28,7 @@ internal class Program
 
             int rowCount = Convert.ToInt32(countCmd.ExecuteScalar());
 
-            if (rowCount == 0)
+            if (rowCount <= 5)
             {
                 countCmd.CommandText = PreseedDB();
                 countCmd.ExecuteNonQuery();
@@ -49,9 +49,10 @@ internal class Program
                 Console.WriteLine("\nWhat would you like to do?");
                 Console.WriteLine("\nType 0 to Close Application.");
                 Console.WriteLine("Type 1 to View All Records.");
-                Console.WriteLine("Type 2 to Insert Record.");
-                Console.WriteLine("Type 3 to Delete Record.");
-                Console.WriteLine("Type 4 to Update Record.");
+                Console.WriteLine("Type 2 to View a Report of your Records");
+                Console.WriteLine("Type 3 to Insert Record.");
+                Console.WriteLine("Type 4 to Delete Record.");
+                Console.WriteLine("Type 5 to Update Record.");
                 Console.WriteLine("------------------------------------------\n");
 
                 string? commandInput = Console.ReadLine();
@@ -67,16 +68,19 @@ internal class Program
                         GetAllRecords();
                         break;
                     case "2":
-                        Insert();
+                        GetReportOfHabits();
                         break;
                     case "3":
-                        Delete();
+                        Insert();
                         break;
                     case "4":
+                        Delete();
+                        break;
+                    case "5":
                         Update();
                         break;
                     default:
-                        Console.WriteLine("Invalid Command. Please type a number from 0 to 4.\n");
+                        Console.WriteLine("Invalid Command. Please type a number from 0 to 5.\n");
                         break;
                 }
             }
@@ -84,7 +88,6 @@ internal class Program
 
         static void GetAllRecords()
         {
-
             Console.Clear();
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -117,8 +120,6 @@ internal class Program
                     Console.WriteLine("No rows found");
                 }
 
-                connection.Close();
-
                 Console.WriteLine("---------------------------------------------");
                 foreach (var habit in tableData)
                 {
@@ -129,9 +130,63 @@ internal class Program
             }
         }
 
+        static void GetReportOfHabits()
+        {
+            Console.Clear();
+
+            var habitName = GetStringInput("\nPlease type the name of the habit you would like a report on. Type 0 to return to main menu.");
+
+            var habitUnit = GetStringInput("Type the measure unit you would like a report on. (km, minutes, pages)");
+
+            var typeOfReport = GetStringInput("Please enter the type of report you would like. (Total, weekly, yearly)");
+
+            using (var connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+                var tableCmd = connection.CreateCommand();
+
+                tableCmd.CommandText = $"SELECT * " +
+                    $"FROM habits " +
+                    $"WHERE Name = @Name," +
+                    $"MeasurementUnit = @Unit AND" +
+                    $"Date > date('now','1-year')";
+
+                List<Habits> tableData = new();
+
+                SqliteDataReader reader = tableCmd.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        tableData.Add(
+                        new Habits
+                        {
+                            Id = reader.GetInt32(0),
+                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yy", new CultureInfo("en-US")),
+                            Name = reader.GetString(2),
+                            MeasurementUnit = reader.GetString(3),
+                            MeasurementValue = reader.GetDouble(4),
+                        });
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No rows found");
+                }
+
+                Console.WriteLine("---------------------------------------------");
+                foreach (var habit in tableData)
+                {
+                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("dd-MM-yyyy")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
+                }
+
+
+            }
+        }
+
         static void Insert()
         {
-
             string date = GetDateInput();
 
             string name = GetStringInput("Enter the name of your habit:");
@@ -291,13 +346,15 @@ internal class Program
 
             string stringInput = Console.ReadLine();
 
+            if (stringInput == "0") GetUserInput();
+
             while (String.IsNullOrWhiteSpace(stringInput))
             {
                 Console.WriteLine("Invalid string. Try again.");
                 stringInput = Console.ReadLine();
             }
 
-            return stringInput;
+            return stringInput.ToLower();
         }
 
         static string PreseedDB()
@@ -305,7 +362,7 @@ internal class Program
             Random random = new Random();
 
             string date = "22-05-18";
-            string[] name = { "Running", "Studying", "Reading", "Playing piano", "Boxing" };
+            string[] name = { "running", "studying", "reading", "playing piano", "boxing" };
             string unit = "minutes";
 
             List<string> values = new List<string>();
