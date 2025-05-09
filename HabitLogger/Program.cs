@@ -16,7 +16,9 @@ internal class Program
                 $@"CREATE TABLE IF NOT EXISTS habits (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Date TEXT,
-            Quantity REAL
+            Name TEXT,
+            MeasurementUnit TEXT,
+            MeasurementValue REAL
             )";
 
             tableCmd.ExecuteNonQuery();
@@ -94,8 +96,8 @@ internal class Program
                         new Habits
                         {
                             Id = reader.GetInt32(0),
-                            Name = reader.GetString(1),
-                            Date = DateTime.ParseExact(reader.GetString(2), "dd-MM-yy", new CultureInfo("en-US")),
+                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yy", new CultureInfo("en-US")),
+                            Name = reader.GetString(2),
                             MeasurementUnit = reader.GetString(3),
                             MeasurementValue = reader.GetDouble(4),
                         });
@@ -123,7 +125,11 @@ internal class Program
 
             string date = GetDateInput();
 
-            int name = GetNumberInput("Please insert a number of glasses or other measure of your choice (no decimals allowed)\n");
+            string name = GetStringInput("Enter the name of your habit:");
+
+            string measurementUnit = GetStringInput("Enter the measurement unit (km, minutes, pages");
+
+            double measurementValue = GetNumberInput("Enter the measurement value");
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -131,10 +137,12 @@ internal class Program
                 
                 var tableCmd = connection.CreateCommand();
                 tableCmd.CommandText =
-                    $"INSERT INTO habits (date, quantity) VALUES (@Date, @Name, @MeasurementUnit, @MeasurementValue)";
+                    $"INSERT INTO habits (date, name, measurementUnit, measurementValue) VALUES (@Date, @Name, @MeasurementUnit, @MeasurementValue)";
 
                 tableCmd.Parameters.Add("@Date", SqliteType.Text).Value = date;
-                tableCmd.Parameters.Add("@Name", SqliteType.Integer).Value = quantity;
+                tableCmd.Parameters.Add("@Name", SqliteType.Text).Value = name;
+                tableCmd.Parameters.Add("@MeasurementUnit", SqliteType.Text).Value = measurementUnit;
+                tableCmd.Parameters.Add("@MeasurementValue", SqliteType.Real).Value = measurementValue;
 
                 tableCmd.ExecuteNonQuery();
 
@@ -150,7 +158,7 @@ internal class Program
             Console.Clear();
             GetAllRecords();
 
-            var recordId = GetNumberInput("\n\nPlease type Id of the record would like to update. Type 0 to return to main menu.");
+            var habitId = GetNumberInput("\n\nPlease type Id of the habit you would like to update. Type 0 to return to main menu.");
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -158,14 +166,14 @@ internal class Program
 
                 var checkCmd = connection.CreateCommand();
                 
-                checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM drinking_water WHERE Id = @Id)";
-                checkCmd.Parameters.Add("@Id",SqliteType.Real).Value = recordId;
+                checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM habits WHERE Id = @Id)";
+                checkCmd.Parameters.Add("@Id",SqliteType.Real).Value = habitId;
 
                 int checkQuery = Convert.ToInt32(checkCmd.ExecuteScalar());
 
                 if (checkQuery == 0)
                 {
-                    Console.WriteLine($"\nRecord with Id {recordId} doesn't exist.\n");
+                    Console.WriteLine($"\nHabit with Id {habitId} doesn't exist.\n");
                     Console.ReadKey();
                     connection.Close();
                     Update();
@@ -174,14 +182,20 @@ internal class Program
 
                 string date = GetDateInput();
 
-                int quantity = GetNumberInput("\nInsert the number of glasses or other measure of your choice");
+                string name = GetStringInput("Enter the name of your habit:");
+
+                string measurementUnit = GetStringInput("Enter the measurement unit (km, minutes, pages");
+
+                double measurementValue = GetNumberInput("Enter the measurement value");
 
                 var tableCmd = connection.CreateCommand();
-                tableCmd.CommandText = $"UPDATE drinking_water SET date = @Date, quantity = @Quantity WHERE Id = @Id";
+                tableCmd.CommandText = $"UPDATE habits SET date = @Date, name = @Name, measurementUnit = @MeasurementUnit, measurementValue = @MeasurementValue WHERE Id = @Id";
 
+                tableCmd.Parameters.Add("@Id", SqliteType.Real).Value = habitId;
                 tableCmd.Parameters.Add("@Date", SqliteType.Text).Value = date;
-                tableCmd.Parameters.Add("@Id", SqliteType.Real).Value = recordId;
-                tableCmd.Parameters.Add("@Quantity", SqliteType.Real).Value = quantity;
+                tableCmd.Parameters.Add("@Name", SqliteType.Text).Value = name;
+                tableCmd.Parameters.Add("@MeasurementUnit", SqliteType.Text).Value = measurementUnit;
+                tableCmd.Parameters.Add("@MeasurementValue", SqliteType.Real).Value = measurementValue;
 
                 tableCmd.ExecuteNonQuery();
 
@@ -195,9 +209,9 @@ internal class Program
             Console.Clear();
             GetAllRecords();
 
-            var recordId = GetNumberInput("\n\nType the Id of the record you want to delete or press 0 to go back to the Main Menu");
+            var habitId = GetNumberInput("\n\nType the Id of the habit you want to delete or press 0 to go back to the Main Menu");
 
-            if (recordId == 0)
+            if (habitId == 0)
             {
                 return;
             }
@@ -207,21 +221,21 @@ internal class Program
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
 
-                tableCmd.CommandText = $"DELETE from drinking_water WHERE Id = @Id";
-                tableCmd.Parameters.Add("@Id", SqliteType.Integer).Value = recordId;
+                tableCmd.CommandText = $"DELETE from habits WHERE Id = @Id";
+                tableCmd.Parameters.Add("@Id", SqliteType.Integer).Value = habitId;
 
                 int rowCount = tableCmd.ExecuteNonQuery();
 
                 if (rowCount == 0)
                 {
-                    Console.WriteLine($"\n\nRecord with Id {recordId} doesn't exist. \n\n");
+                    Console.WriteLine($"\n\nHabit with Id {habitId} doesn't exist. \n\n");
                     Console.ReadKey();
                     Delete();
                     return;
                 }
             }
 
-            Console.WriteLine($"\n\nRecord with Id {recordId} was deleted. \n\n");
+            Console.WriteLine($"\n\nHabit with Id {habitId} was deleted. \n\n");
             Console.ReadKey();
         }
 
@@ -243,7 +257,7 @@ internal class Program
             return dateInput;
         }
 
-        static int GetNumberInput(string message)
+        static double GetNumberInput(string message)
         {
             Console.WriteLine(message);
 
@@ -251,7 +265,13 @@ internal class Program
 
             if (numberInput == "0") GetUserInput();
 
-            int finalInput = Convert.ToInt32(numberInput);
+            while (!double.TryParse(numberInput, out _))
+            {
+                Console.WriteLine("Invalid input. It needs to be a number");
+                numberInput = Console.ReadLine();
+            }
+
+            double finalInput = Convert.ToDouble(numberInput);
 
             return finalInput;
         }
@@ -268,9 +288,7 @@ internal class Program
                 stringInput = Console.ReadLine();
             }
 
-            string str = stringInput[0] + stringInput.Substring(1);
-
-            return str.ToUpper();
+            return stringInput;
         }
     }
 
