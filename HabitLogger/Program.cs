@@ -256,22 +256,22 @@ internal class Program
             return finalInput;
         }
 
-        //static string GetStringInput(string message)
-        //{
-        //    Console.WriteLine(message);
+        static string GetStringInput(string message)
+        {
+            Console.WriteLine(message);
 
-        //    string stringInput = Console.ReadLine();
+            string stringInput = Console.ReadLine();
 
-        //    while (String.IsNullOrWhiteSpace(stringInput))
-        //    {
-        //        Console.WriteLine("Invalid string. Try again.");
-        //        stringInput = Console.ReadLine();
-        //    }
+            while (String.IsNullOrWhiteSpace(stringInput))
+            {
+                Console.WriteLine("Invalid string. Try again.");
+                stringInput = Console.ReadLine();
+            }
 
-        //    string str = stringInput[0] + stringInput.Substring(1);
+            string str = stringInput[0] + stringInput.Substring(1);
 
-        //    return str.ToUpper();
-        //}
+            return str.ToUpper();
+        }
     }
 
     public class Habits
