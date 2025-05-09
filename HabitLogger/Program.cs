@@ -96,7 +96,8 @@ internal class Program
                             Id = reader.GetInt32(0),
                             Name = reader.GetString(1),
                             Date = DateTime.ParseExact(reader.GetString(2), "dd-MM-yy", new CultureInfo("en-US")),
-                            Measurement = reader.GetDouble(3)
+                            MeasurementUnit = reader.GetString(3),
+                            MeasurementValue = reader.GetDouble(4),
                         });
                     }
                 }
@@ -108,9 +109,9 @@ internal class Program
                 connection.Close();
 
                 Console.WriteLine("---------------------------------------------");
-                foreach (var dw in tableData)
+                foreach (var habit in tableData)
                 {
-                    Console.WriteLine($"{dw.Id} - {dw.Date.ToString("dd-MM-yyyy")} - Quantity: {dw.Quantity}");
+                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("dd-MM-yyyy")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
                 }
                 Console.WriteLine("---------------------------------------------\n");
                 Console.ReadKey();
@@ -122,7 +123,7 @@ internal class Program
 
             string date = GetDateInput();
 
-            int quantity = GetNumberInput("Please insert a number of glasses or other measure of your choice (no decimals allowed)\n");
+            int name = GetNumberInput("Please insert a number of glasses or other measure of your choice (no decimals allowed)\n");
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -130,10 +131,10 @@ internal class Program
                 
                 var tableCmd = connection.CreateCommand();
                 tableCmd.CommandText =
-                    $"INSERT INTO drinking_water(date, quantity) VALUES (@Date, @Quantity)";
+                    $"INSERT INTO habits (date, quantity) VALUES (@Date, @Name, @MeasurementUnit, @MeasurementValue)";
 
                 tableCmd.Parameters.Add("@Date", SqliteType.Text).Value = date;
-                tableCmd.Parameters.Add("@Quantity", SqliteType.Integer).Value = quantity;
+                tableCmd.Parameters.Add("@Name", SqliteType.Integer).Value = quantity;
 
                 tableCmd.ExecuteNonQuery();
 
@@ -254,6 +255,23 @@ internal class Program
 
             return finalInput;
         }
+
+        //static string GetStringInput(string message)
+        //{
+        //    Console.WriteLine(message);
+
+        //    string stringInput = Console.ReadLine();
+
+        //    while (String.IsNullOrWhiteSpace(stringInput))
+        //    {
+        //        Console.WriteLine("Invalid string. Try again.");
+        //        stringInput = Console.ReadLine();
+        //    }
+
+        //    string str = stringInput[0] + stringInput.Substring(1);
+
+        //    return str.ToUpper();
+        //}
     }
 
     public class Habits
@@ -261,7 +279,9 @@ internal class Program
         public int Id { get; set; }
         public string Name { get; set; }
         public DateTime Date { get; set; }
-        public double Measurement { get; set; }
+        public string MeasurementUnit { get; set; }
+        public double MeasurementValue { get; set; }
+
     }
     public class DrinkingWater
     {
