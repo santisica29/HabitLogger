@@ -23,7 +23,16 @@ internal class Program
 
             tableCmd.ExecuteNonQuery();
 
-            connection.Close();
+            var countCmd = connection.CreateCommand();
+            countCmd.CommandText = $"SELECT COUNT(*) FROM habits";
+
+            int rowCount = Convert.ToInt32(countCmd.ExecuteScalar());
+
+            if (rowCount == 0)
+            {
+                countCmd.CommandText = PreseedDB();
+                countCmd.ExecuteNonQuery();
+            }
         }
 
         GetUserInput();
@@ -134,7 +143,7 @@ internal class Program
             using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
-                
+
                 var tableCmd = connection.CreateCommand();
                 tableCmd.CommandText =
                     $"INSERT INTO habits (date, name, measurementUnit, measurementValue) VALUES (@Date, @Name, @MeasurementUnit, @MeasurementValue)";
@@ -165,9 +174,9 @@ internal class Program
                 connection.Open();
 
                 var checkCmd = connection.CreateCommand();
-                
+
                 checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM habits WHERE Id = @Id)";
-                checkCmd.Parameters.Add("@Id",SqliteType.Real).Value = habitId;
+                checkCmd.Parameters.Add("@Id", SqliteType.Real).Value = habitId;
 
                 int checkQuery = Convert.ToInt32(checkCmd.ExecuteScalar());
 
@@ -184,7 +193,7 @@ internal class Program
 
                 string name = GetStringInput("Enter the name of your habit:");
 
-                string measurementUnit = GetStringInput("Enter the measurement unit (km, minutes, pages");
+                string measurementUnit = GetStringInput("Enter the measurement unit (km, minutes, pages)");
 
                 double measurementValue = GetNumberInput("Enter the measurement value");
 
@@ -290,7 +299,33 @@ internal class Program
 
             return stringInput;
         }
+
+        static string PreseedDB()
+        {
+            Random random = new Random();
+
+            string date = "22-05-18";
+            string[] name = { "Running", "Studying", "Reading", "Playing piano", "Boxing" };
+            string unit = "minutes";
+
+            List<string> values = new List<string>();
+
+            for (int i = 1; i <= 100; i++)
+            {
+                int numBetween0And4 = random.Next(5);
+                int numBetween1And60 = random.Next(1, 61);
+
+                values.Add($"('{date}', '{name[numBetween0And4]}', '{unit}', {numBetween1And60})");
+            }
+
+            string str = "INSERT INTO habits (date, name, measurementUnit, measurementValue) VALUES " +
+                string.Join(", ", values) + ";";
+
+            return str;
+        }
     }
+
+
 
     public class Habits
     {
