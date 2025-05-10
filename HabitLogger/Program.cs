@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Data.Sqlite;
 using System.Globalization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 internal class Program
 {
@@ -147,9 +148,12 @@ internal class Program
 
                 tableCmd.CommandText = $"SELECT * " +
                     $"FROM habits " +
-                    $"WHERE Name = @Name," +
-                    $"MeasurementUnit = @Unit AND" +
-                    $"Date > date('now','1-year')";
+                    $"WHERE Name = @Name AND " +
+                    $"MeasurementUnit = @Unit AND " +
+                    $"Date > date('now','-5 year')";
+
+                tableCmd.Parameters.Add("@Name", SqliteType.Text).Value = habitName;
+                tableCmd.Parameters.Add("@Unit", SqliteType.Text).Value = habitUnit;
 
                 List<Habits> tableData = new();
 
@@ -180,6 +184,8 @@ internal class Program
                 {
                     Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
                 }
+
+                Console.ReadKey();
 
 
             }
@@ -348,7 +354,7 @@ internal class Program
 
             if (stringInput == "0") GetUserInput();
 
-            while (String.IsNullOrWhiteSpace(stringInput))
+            while (System.String.IsNullOrWhiteSpace(stringInput))
             {
                 Console.WriteLine("Invalid string. Try again.");
                 stringInput = Console.ReadLine();
@@ -372,7 +378,7 @@ internal class Program
                 int numBetween0And4 = random.Next(5);
                 int numBetween1And60 = random.Next(1, 61);
 
-                values.Add($"('2022-08-05', '{name[numBetween0And4]}', '{unit}', {numBetween1And60})");
+                values.Add($"('{date[random.Next(3)]}', '{name[numBetween0And4]}', '{unit}', {numBetween1And60})");
             }
 
             string str = "INSERT INTO habits (date, name, measurementUnit, measurementValue) VALUES " +
