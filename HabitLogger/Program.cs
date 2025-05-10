@@ -108,7 +108,7 @@ internal class Program
                         new Habits
                         {
                             Id = reader.GetInt32(0),
-                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yy", new CultureInfo("en-US")),
+                            Date = DateTime.ParseExact(reader.GetString(1), "yyyy-mm-dd", new CultureInfo("en-US")),
                             Name = reader.GetString(2),
                             MeasurementUnit = reader.GetString(3),
                             MeasurementValue = reader.GetDouble(4),
@@ -123,7 +123,7 @@ internal class Program
                 Console.WriteLine("---------------------------------------------");
                 foreach (var habit in tableData)
                 {
-                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("dd-MM-yyyy")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
+                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
                 }
                 Console.WriteLine("---------------------------------------------\n");
                 Console.ReadKey();
@@ -163,7 +163,7 @@ internal class Program
                         new Habits
                         {
                             Id = reader.GetInt32(0),
-                            Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yy", new CultureInfo("en-US")),
+                            Date = DateTime.ParseExact(reader.GetString(1), "yyyy-mm-dd", new CultureInfo("en-US")),
                             Name = reader.GetString(2),
                             MeasurementUnit = reader.GetString(3),
                             MeasurementValue = reader.GetDouble(4),
@@ -178,7 +178,7 @@ internal class Program
                 Console.WriteLine("---------------------------------------------");
                 foreach (var habit in tableData)
                 {
-                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("dd-MM-yyyy")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
+                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
                 }
 
 
@@ -305,16 +305,16 @@ internal class Program
 
         static string GetDateInput()
         {
-            Console.WriteLine("Please insert the date: (Format: dd-mm-yy). Type t to enter today's date or 0 to return to main menu");
+            Console.WriteLine("Please insert the date: (Format: yyyy-mm-dd). Type t to enter today's date or 0 to return to main menu");
 
             string? dateInput = Console.ReadLine().Trim().ToLower();
 
             if (dateInput == "0") GetUserInput();
-            if (dateInput == "t") return DateTime.Now.ToString("dd-MM-yy");
+            if (dateInput == "t") return DateTime.Now.ToString("yyyy-mm-dd");
 
-            while (!DateTime.TryParseExact(dateInput, "dd-MM-yy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
+            while (!DateTime.TryParseExact(dateInput, "yyyy-mm-dd", new CultureInfo("en-US"), DateTimeStyles.None, out _))
             {
-                Console.WriteLine("\nInvalid date. (Format: dd-mm-yy). Type 0 to return to main menu or try again:\n");
+                Console.WriteLine("\nInvalid date. (Format: yyyy-mm-dd). Type 0 to return to main menu or try again:\n");
                 dateInput = Console.ReadLine();
             }
 
@@ -361,18 +361,18 @@ internal class Program
         {
             Random random = new Random();
 
-            string date = "22-05-18";
+            string[] date = { "2022-05-18", "2015-08-09", "2010-10-22" };
             string[] name = { "running", "studying", "reading", "playing piano", "boxing" };
             string unit = "minutes";
 
             List<string> values = new List<string>();
 
-            for (int i = 1; i <= 100; i++)
+            for (int i = 1; i <= 20; i++)
             {
                 int numBetween0And4 = random.Next(5);
                 int numBetween1And60 = random.Next(1, 61);
 
-                values.Add($"('{date}', '{name[numBetween0And4]}', '{unit}', {numBetween1And60})");
+                values.Add($"('2022-08-05', '{name[numBetween0And4]}', '{unit}', {numBetween1And60})");
             }
 
             string str = "INSERT INTO habits (date, name, measurementUnit, measurementValue) VALUES " +
