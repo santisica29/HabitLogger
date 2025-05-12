@@ -2,6 +2,7 @@
 using Microsoft.Data.Sqlite;
 using System.Globalization;
 using System.Reflection.Metadata.Ecma335;
+using static Program;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 internal class Program
@@ -141,10 +142,8 @@ internal class Program
         {
             Console.Clear();
 
-            var habitName = GetStringInput("\nPlease type the name of the habit you would like a report on. Type 0 to return to main menu.");
-
-            //var habitUnit = GetStringInput("Type the measure unit you would like a report on. (km, minutes, pages)");
-
+            var habitName = ValidateHabitName();
+            
             var typeOfReport = GetStringInput("Please enter the type of report you would like. (weekly, monthly, yearly)");
 
             var styleOfReport = GetStringInput("Enter if you would like to see all records or the total of them");
@@ -164,15 +163,15 @@ internal class Program
 
                 SqliteDataReader reader = tableCmd.ExecuteReader();
 
-                int? total = 0;
-
                 if (reader.HasRows)
                 {
                     while (reader.Read())
                     {
                         if (styleOfReport == "total")
                         {
+                            Console.WriteLine($"\n\n------{typeOfReport.ToUpper()} TOTAL------");
                             Console.WriteLine($"{reader.GetString(0)}: {reader.GetInt32(1)}, {reader.GetString(2)}: {reader.GetDouble(3)}");
+                            Console.WriteLine("-------------------------");
                         }
                         else
                         {
@@ -185,16 +184,13 @@ internal class Program
                                 MeasurementUnit = reader.GetString(3),
                                 MeasurementValue = reader.GetDouble(4),
                             });
-                        }    
+                        }
                     }
-                    Console.WriteLine($"\n\n-----{typeOfReport.ToUpper()}-----");
                 }
                 else
                 {
                     Console.WriteLine("No rows found");
                 }
-
-                Console.WriteLine("---------------------------------------------");
 
                 foreach (var habit in tableData)
                 {
@@ -377,7 +373,36 @@ internal class Program
             return stringInput.ToLower();
         }
 
-        static object GetSQLQuery(string typeOfReport, string styleOfReport)
+        static string ValidateHabitName()
+        {
+            var habitName = GetStringInput("Select the habit name you would like your report.");
+
+            while (!CheckIfHabitExistWithThatName(habitName))
+            {
+                habitName = GetStringInput("That habit doesn't exist, Try again.");
+            }
+
+            return habitName;
+        }
+
+        static bool CheckIfHabitExistWithThatName(string habitName)
+        {
+            using (var connection = new SqliteConnection(connectionString))
+            {
+                connection.Open();
+
+                var checkCmd = connection.CreateCommand();
+
+                checkCmd.CommandText = $"SELECT EXISTS(SELECT 1 FROM habits WHERE Name = @Name)";
+                checkCmd.Parameters.Add("@Name", SqliteType.Text).Value = habitName;
+
+                int checkQuery = Convert.ToInt32(checkCmd.ExecuteScalar());
+
+                if (checkQuery == 0) return false;
+                else return true;
+            }
+        }
+        static string GetSQLQuery(string typeOfReport, string styleOfReport)
         {
             while (typeOfReport != "weekly" && typeOfReport != "yearly" && typeOfReport != "monthly")
             {
