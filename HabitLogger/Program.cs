@@ -138,7 +138,7 @@ internal class Program
 
             var habitName = GetStringInput("\nPlease type the name of the habit you would like a report on. Type 0 to return to main menu.");
 
-            var habitUnit = GetStringInput("Type the measure unit you would like a report on. (km, minutes, pages)");
+            //var habitUnit = GetStringInput("Type the measure unit you would like a report on. (km, minutes, pages)");
 
             var typeOfReport = GetStringInput("Please enter the type of report you would like. (Total, weekly, monthly, yearly)");
 
@@ -152,11 +152,9 @@ internal class Program
                 tableCmd.CommandText = $"SELECT * " +
                     $"FROM habits " +
                     $"WHERE Name = @Name AND " +
-                    $"MeasurementUnit = @Unit AND " +
                     dateCondition;
 
                 tableCmd.Parameters.Add("@Name", SqliteType.Text).Value = habitName;
-                tableCmd.Parameters.Add("@Unit", SqliteType.Text).Value = habitUnit;
 
                 List<Habits> tableData = new();
 
@@ -199,7 +197,7 @@ internal class Program
 
             string name = GetStringInput("Enter the name of your habit:");
 
-            string measurementUnit = GetStringInput("Enter the measurement unit (km, minutes, pages");
+            string measurementUnit = GetStringInput("Enter the measurement unit (km, minutes, pages)");
 
             double measurementValue = GetNumberInput("Enter the measurement value");
 
@@ -367,7 +365,7 @@ internal class Program
 
         static object GetDateSQLQuery(string typeOfReport)
         {
-            while (typeOfReport != "total" ||  typeOfReport != "weekly" || typeOfReport != "yearly" || typeOfReport != "monthly")
+            while (typeOfReport != "total" && typeOfReport != "weekly" && typeOfReport != "yearly" && typeOfReport != "monthly")
             {
                 Console.WriteLine("Invalid input. choose 'total', 'yearly' or 'weekly'");
                 typeOfReport = Console.ReadLine();
@@ -375,10 +373,10 @@ internal class Program
 
             var result = typeOfReport switch
             {
-                "total" => "Date > date('now','-5 year')",
-                "yearly" => "Date > date('now', '-5 year')",
-                "weekly" => "Date > date('now','-5 year')",
-                "monthly" => "Date > date('now','-5 year')",
+                "total" => "",
+                "yearly" => "Date > date('now', '-1 year')",
+                "weekly" => "Date > date('now','-1 week')",
+                "monthly" => "Date > date('now','start of month' ,'-1 month')",
             };
 
             return result;
