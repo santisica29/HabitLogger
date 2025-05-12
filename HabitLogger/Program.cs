@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.Data.Sqlite;
 using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 internal class Program
@@ -139,7 +140,9 @@ internal class Program
 
             var habitUnit = GetStringInput("Type the measure unit you would like a report on. (km, minutes, pages)");
 
-            var typeOfReport = GetStringInput("Please enter the type of report you would like. (Total, weekly, yearly)");
+            var typeOfReport = GetStringInput("Please enter the type of report you would like. (Total, weekly, monthly, yearly)");
+
+            var dateCondition = GetDateSQLQuery(typeOfReport);
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -150,7 +153,7 @@ internal class Program
                     $"FROM habits " +
                     $"WHERE Name = @Name AND " +
                     $"MeasurementUnit = @Unit AND " +
-                    $"Date > date('now','-5 year')";
+                    dateCondition;
 
                 tableCmd.Parameters.Add("@Name", SqliteType.Text).Value = habitName;
                 tableCmd.Parameters.Add("@Unit", SqliteType.Text).Value = habitUnit;
@@ -173,6 +176,7 @@ internal class Program
                             MeasurementValue = reader.GetDouble(4),
                         });
                     }
+                    Console.WriteLine(typeOfReport);
                 }
                 else
                 {
@@ -186,8 +190,6 @@ internal class Program
                 }
 
                 Console.ReadKey();
-
-
             }
         }
 
@@ -363,6 +365,25 @@ internal class Program
             return stringInput.ToLower();
         }
 
+        static object GetDateSQLQuery(string typeOfReport)
+        {
+            while (typeOfReport != "total" ||  typeOfReport != "weekly" || typeOfReport != "yearly" || typeOfReport != "monthly")
+            {
+                Console.WriteLine("Invalid input. choose 'total', 'yearly' or 'weekly'");
+                typeOfReport = Console.ReadLine();
+            }
+
+            var result = typeOfReport switch
+            {
+                "total" => "Date > date('now','-5 year')",
+                "yearly" => "Date > date('now', '-5 year')",
+                "weekly" => "Date > date('now','-5 year')",
+                "monthly" => "Date > date('now','-5 year')",
+            };
+
+            return result;
+        }
+
         static string PreseedDB()
         {
             Random random = new Random();
@@ -387,8 +408,6 @@ internal class Program
             return str;
         }
     }
-
-
 
     public class Habits
     {
