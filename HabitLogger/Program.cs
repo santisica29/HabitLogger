@@ -132,6 +132,11 @@ internal class Program
             }
         }
 
+        static void GetReportOfTotalHabits()
+        {
+
+        }
+
         static void GetReportOfHabits()
         {
             Console.Clear();
@@ -165,15 +170,22 @@ internal class Program
                 {
                     while (reader.Read())
                     {
-                        tableData.Add(
-                        new Habits
+                        if (styleOfReport == "total")
                         {
-                            Id = reader.GetInt32(0),
-                            Date = DateTime.ParseExact(reader.GetString(1), "yyyy-mm-dd", new CultureInfo("en-US")),
-                            Name = reader.GetString(2),
-                            MeasurementUnit = reader.GetString(3),
-                            MeasurementValue = reader.GetDouble(4),
-                        });
+                            Console.WriteLine($"{reader.GetString(0)}: {reader.GetInt32(1)}, {reader.GetString(2)}: {reader.GetDouble(3)}");
+                        }
+                        else
+                        {
+                            tableData.Add(
+                            new Habits
+                            {
+                                Id = reader.GetInt32(0),
+                                Date = DateTime.ParseExact(reader.GetString(1), "yyyy-mm-dd", new CultureInfo("en-US")),
+                                Name = reader.GetString(2),
+                                MeasurementUnit = reader.GetString(3),
+                                MeasurementValue = reader.GetDouble(4),
+                            });
+                        }    
                     }
                     Console.WriteLine($"\n\n-----{typeOfReport.ToUpper()}-----");
                 }
