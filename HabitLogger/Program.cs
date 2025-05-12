@@ -140,25 +140,26 @@ internal class Program
 
             //var habitUnit = GetStringInput("Type the measure unit you would like a report on. (km, minutes, pages)");
 
-            var typeOfReport = GetStringInput("Please enter the type of report you would like. (Total, weekly, monthly, yearly)");
+            var typeOfReport = GetStringInput("Please enter the type of report you would like. (weekly, monthly, yearly)");
 
-            var dateCondition = GetDateSQLQuery(typeOfReport);
+            var styleOfReport = GetStringInput("Enter if you would like to see all records or the total of them");
+
+            var query = GetSQLQuery(typeOfReport, styleOfReport);
 
             using (var connection = new SqliteConnection(connectionString))
             {
                 connection.Open();
                 var tableCmd = connection.CreateCommand();
 
-                tableCmd.CommandText = $"SELECT * " +
-                    $"FROM habits " +
-                    $"WHERE Name = @Name AND " +
-                    dateCondition;
+                tableCmd.CommandText = (string)query;
 
                 tableCmd.Parameters.Add("@Name", SqliteType.Text).Value = habitName;
 
                 List<Habits> tableData = new();
 
                 SqliteDataReader reader = tableCmd.ExecuteReader();
+
+                int? total = 0;
 
                 if (reader.HasRows)
                 {
@@ -174,7 +175,7 @@ internal class Program
                             MeasurementValue = reader.GetDouble(4),
                         });
                     }
-                    Console.WriteLine(typeOfReport);
+                    Console.WriteLine($"\n\n-----{typeOfReport.ToUpper()}-----");
                 }
                 else
                 {
@@ -182,6 +183,7 @@ internal class Program
                 }
 
                 Console.WriteLine("---------------------------------------------");
+
                 foreach (var habit in tableData)
                 {
                     Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
@@ -363,23 +365,34 @@ internal class Program
             return stringInput.ToLower();
         }
 
-        static object GetDateSQLQuery(string typeOfReport)
+        static object GetSQLQuery(string typeOfReport, string styleOfReport)
         {
-            while (typeOfReport != "total" && typeOfReport != "weekly" && typeOfReport != "yearly" && typeOfReport != "monthly")
+            while (typeOfReport != "weekly" && typeOfReport != "yearly" && typeOfReport != "monthly")
             {
-                Console.WriteLine("Invalid input. choose 'total', 'yearly' or 'weekly'");
+                Console.WriteLine("Invalid input. Choose 'yearly', 'monthly' or 'weekly'");
                 typeOfReport = Console.ReadLine();
             }
 
-            var result = typeOfReport switch
+            while (styleOfReport != "total" && styleOfReport != "all")
             {
-                "total" => "",
-                "yearly" => "Date > date('now', '-1 year')",
-                "weekly" => "Date > date('now','-1 week')",
+                Console.WriteLine("Invalid input. Choose 'total' or 'all'");
+                styleOfReport = Console.ReadLine();
+            }
+
+            var date = typeOfReport switch
+            {
+                "yearly" => "Date > date('now','start of year', '-1 year')",
                 "monthly" => "Date > date('now','start of month' ,'-1 month')",
+                "weekly" => "Date > date('now','-7 days')",
             };
 
-            return result;
+            var query = styleOfReport switch
+            {
+                "total" => $"SELECT Name, Count(*), MeasurementUnit, SUM(MeasurementValue) as TOTAL FROM Habits WHERE Name = @Name And {date}",
+                "all" => $"SELECT * FROM Habits WHERE Name = @Name AND {date}"
+            };
+
+            return query;
         }
 
         static string PreseedDB()
