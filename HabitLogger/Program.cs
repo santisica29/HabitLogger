@@ -133,18 +133,13 @@ internal class Program
             }
         }
 
-        static void GetReportOfTotalHabits()
-        {
-
-        }
-
         static void GetReportOfHabits()
         {
             Console.Clear();
 
             var habitName = ValidateHabitName();
             
-            var typeOfReport = GetStringInput("Please enter the type of report you would like. (weekly, monthly, yearly)");
+            var typeOfReport = GetStringInput("Please enter the type of report you would like. Weekly , Monthly, Yearly ('w','m','y'))");
 
             var styleOfReport = GetStringInput("Enter if you would like to see all records or the total of them");
 
@@ -171,7 +166,7 @@ internal class Program
                         {
                             Console.WriteLine($"\n\n------{typeOfReport.ToUpper()} TOTAL------");
                             Console.WriteLine($"{reader.GetString(0)}: {reader.GetInt32(1)}, {reader.GetString(2)}: {reader.GetDouble(3)}");
-                            Console.WriteLine("-------------------------");
+                            Console.WriteLine("----------------------------");
                         }
                         else
                         {
@@ -189,11 +184,12 @@ internal class Program
                 }
                 else
                 {
-                    Console.WriteLine("No rows found");
+                    Console.WriteLine("\nNo rows found");
                 }
 
                 foreach (var habit in tableData)
                 {
+                    Console.WriteLine("\n------------------------------------------\n");
                     Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
                 }
 
@@ -404,29 +400,28 @@ internal class Program
         }
         static string GetSQLQuery(string typeOfReport, string styleOfReport)
         {
-            while (typeOfReport != "weekly" && typeOfReport != "yearly" && typeOfReport != "monthly")
+            while (typeOfReport != "w" && typeOfReport != "y" && typeOfReport != "m")
             {
-                Console.WriteLine("Invalid input. Choose 'yearly', 'monthly' or 'weekly'");
-                typeOfReport = Console.ReadLine();
+                typeOfReport = GetStringInput("Invalid input. Choose 'yearly', 'monthly' or 'weekly'");
             }
 
             while (styleOfReport != "total" && styleOfReport != "all")
             {
-                Console.WriteLine("Invalid input. Choose 'total' or 'all'");
-                styleOfReport = Console.ReadLine();
+                styleOfReport = GetStringInput("Invalid input. Choose 'total' or 'all'");
             }
 
             var date = typeOfReport switch
             {
-                "yearly" => "Date > date('now','start of year', '-1 year')",
-                "monthly" => "Date > date('now','start of month' ,'-1 month')",
-                "weekly" => "Date > date('now','-7 days')",
+                "y" => "Date > date('now','start of year', '-1 year')",
+                "m" => "Date > date('now','start of month' ,'-1 month')",
+                "w" => "Date > date('now','-7 days')",
             };
 
             var query = styleOfReport switch
             {
                 "total" => $"SELECT Name, Count(*), MeasurementUnit, SUM(MeasurementValue) as TOTAL FROM Habits WHERE Name = @Name And {date}",
-                "all" => $"SELECT * FROM Habits WHERE Name = @Name AND {date}"
+                "all" => $"SELECT * FROM Habits WHERE Name = @Name AND {date}",
+                _ => ""
             };
 
             return query;
