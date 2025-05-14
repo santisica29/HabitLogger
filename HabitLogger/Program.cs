@@ -111,7 +111,7 @@ internal class Program
                         new Habits
                         {
                             Id = reader.GetInt32(0),
-                            Date = DateTime.ParseExact(reader.GetString(1), "yyyy-mm-dd", new CultureInfo("en-US")),
+                            Date = DateTime.ParseExact(reader.GetString(1), "yyyy-MM-dd", new CultureInfo("en-US")),
                             Name = reader.GetString(2),
                             MeasurementUnit = reader.GetString(3),
                             MeasurementValue = reader.GetDouble(4),
@@ -126,7 +126,7 @@ internal class Program
                 Console.WriteLine("---------------------------------------------");
                 foreach (var habit in tableData)
                 {
-                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
+                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-MM-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
                 }
                 Console.WriteLine("---------------------------------------------\n");
                 Console.ReadKey();
@@ -170,14 +170,24 @@ internal class Program
                         }
                         else
                         {
-                            tableData.Add(
-                            new Habits
+                            string name = reader.GetString(0);
+                            string dateString = reader.GetString(1);
+                            string unit = reader.GetString(2);
+                            int value = reader.GetInt32(3);
+
+                            DateTime date;
+                            if (!DateTime.TryParseExact(dateString, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
                             {
-                                Id = reader.GetInt32(0),
-                                Date = DateTime.ParseExact(reader.GetString(1), "yyyy-mm-dd", new CultureInfo("en-US")),
-                                Name = reader.GetString(2),
-                                MeasurementUnit = reader.GetString(3),
-                                MeasurementValue = reader.GetDouble(4),
+                                Console.WriteLine($"⚠️ Could not parse date '{dateString}' for habit '{name}'");
+                                continue;
+                            }
+
+                            tableData.Add(new Habits
+                            {
+                                Name = name,
+                                Date = date,
+                                MeasurementUnit = unit,
+                                MeasurementValue = value
                             });
                         }
                     }
@@ -187,11 +197,15 @@ internal class Program
                     Console.WriteLine("\nNo rows found");
                 }
 
-                foreach (var habit in tableData)
+                if (styleOfReport == "all")
                 {
-                    Console.WriteLine("\n------------------------------------------\n");
-                    Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-mm-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
+                    foreach (var habit in tableData)
+                    {
+                        Console.WriteLine("\n------------------------------------------\n");
+                        Console.WriteLine($"{habit.Id} - {habit.Date.ToString("yyyy-MM-dd")} - {habit.Name}: {habit.MeasurementUnit} {habit.MeasurementValue}");
+                    }
                 }
+                
 
                 Console.ReadKey();
             }
@@ -317,16 +331,16 @@ internal class Program
 
         static string GetDateInput()
         {
-            Console.WriteLine("Please insert the date: (Format: yyyy-mm-dd). Type t to enter today's date or 0 to return to main menu");
+            Console.WriteLine("Please insert the date: (Format: yyyy-MM-dd). Type t to enter today's date or 0 to return to main menu");
 
             string? dateInput = Console.ReadLine().Trim().ToLower();
 
             if (dateInput == "0") GetUserInput();
-            if (dateInput == "t") return DateTime.Now.ToString("yyyy-mm-dd");
+            if (dateInput == "t") return DateTime.Now.ToString("yyyy-MM-dd");
 
-            while (!DateTime.TryParseExact(dateInput, "yyyy-mm-dd", new CultureInfo("en-US"), DateTimeStyles.None, out _))
+            while (!DateTime.TryParseExact(dateInput, "yyyy-MM-dd", new CultureInfo("en-US"), DateTimeStyles.None, out _))
             {
-                Console.WriteLine("\nInvalid date. (Format: yyyy-mm-dd). Type 0 to return to main menu or try again:\n");
+                Console.WriteLine("\nInvalid date. (Format: yyyy-MM-dd). Type 0 to return to main menu or try again:\n");
                 dateInput = Console.ReadLine();
             }
 
@@ -421,7 +435,6 @@ internal class Program
             {
                 "total" => $"SELECT Name, Count(*), MeasurementUnit, SUM(MeasurementValue) as TOTAL FROM Habits WHERE Name = @Name And {date}",
                 "all" => $"SELECT * FROM Habits WHERE Name = @Name AND {date}",
-                _ => ""
             };
 
             return query;
